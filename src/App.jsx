@@ -1,9 +1,12 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import LockIcon from './components/LockIcon.jsx'
 import SongMenu from './components/SongMenu.jsx'
 import SongTab from './components/SongTab.jsx'
 import { NOTE_COLORS, SONGS } from './data/songs.js'
 
 const STORAGE_KEY = 'oot-tabs:selected'
+// Stores the ids of songs you've unlocked; anything not listed is locked.
+const UNLOCKED_KEY = 'oot-tabs:unlocked'
 
 function loadInitialIndex() {
   try {
@@ -14,18 +17,46 @@ function loadInitialIndex() {
   }
 }
 
+function loadUnlocked() {
+  try {
+    const ids = JSON.parse(localStorage.getItem(UNLOCKED_KEY) ?? '[]')
+    const known = new Set(SONGS.map((s) => s.id))
+    return new Set(Array.isArray(ids) ? ids.filter((id) => known.has(id)) : [])
+  } catch {
+    return new Set()
+  }
+}
+
+function save(key, value) {
+  try {
+    localStorage.setItem(key, value)
+  } catch {
+    /* storage unavailable – ignore */
+  }
+}
+
 export default function App() {
   const [index, setIndex] = useState(loadInitialIndex)
+  const [unlocked, setUnlocked] = useState(loadUnlocked)
   const touchStart = useRef(null)
   const song = SONGS[index]
+  const isLocked = !unlocked.has(song.id)
+  const locked = useMemo(
+    () => new Set(SONGS.filter((s) => !unlocked.has(s.id)).map((s) => s.id)),
+    [unlocked],
+  )
 
-  useEffect(() => {
-    try {
-      localStorage.setItem(STORAGE_KEY, String(index))
-    } catch {
-      /* storage unavailable – ignore */
-    }
-  }, [index])
+  useEffect(() => save(STORAGE_KEY, String(index)), [index])
+  useEffect(() => save(UNLOCKED_KEY, JSON.stringify([...unlocked])), [unlocked])
+
+  const toggleLock = () => {
+    setUnlocked((prev) => {
+      const next = new Set(prev)
+      if (next.has(song.id)) next.delete(song.id)
+      else next.add(song.id)
+      return next
+    })
+  }
 
   const step = useCallback((delta) => {
     setIndex((i) => (i + delta + SONGS.length) % SONGS.length)
@@ -60,7 +91,7 @@ export default function App() {
         <p className="app__sub">12-hole alto C</p>
       </header>
 
-      <SongMenu songs={SONGS} selectedIndex={index} onSelect={setIndex} />
+      <SongMenu songs={SONGS} selectedIndex={index} locked={locked} onSelect={setIndex} />
 
       <main className="app__main" onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
         <div className="song-banner">
@@ -76,12 +107,31 @@ export default function App() {
           </button>
         </div>
 
-        <SongTab song={song} />
+        <div className="song-actions">
+          <button
+            type="button"
+            className={`lock-toggle${isLocked ? ' lock-toggle--locked' : ''}`}
+            aria-pressed={isLocked}
+            onClick={toggleLock}
+          >
+            <LockIcon open={!isLocked} />
+            {isLocked ? 'Unlock song' : 'Lock song'}
+          </button>
+        </div>
+
+        {isLocked ? (
+          <div className="locked-panel" key={`${song.id}-locked`}>
+            <LockIcon className="locked-panel__icon" />
+            <p>This song is locked.</p>
+          </div>
+        ) : (
+          <SongTab song={song} />
+        )}
 
         <p className="legend">
           <span className="legend__dot legend__dot--covered" /> covered
           <span className="legend__dot" /> open
-          <span className="legend__sep">·</span> bottom row = thumb holes
+          <span className="legend__sep">·</span> dots outside = thumb holes
         </p>
       </main>
     </div>

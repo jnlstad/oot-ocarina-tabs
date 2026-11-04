@@ -15,7 +15,7 @@ export const FINGERINGS = {
   F5: { note: 'F', octave: 5, covered: ['L1', 'L2', 'L3', 'L4', 'R1', 'LT', 'RT'] },
   A5: { note: 'A', octave: 5, covered: ['L1', 'L2', 'L4', 'LT', 'RT'] },
   B5: { note: 'B', octave: 5, covered: ['L1', 'L4', 'LT', 'RT'] },
-  D6: { note: 'D', octave: 6, covered: ['LT'] },
+  D6: { note: 'D', octave: 6, covered: ['L4', 'RT'] },
 }
 
 // In-game button -> pitch

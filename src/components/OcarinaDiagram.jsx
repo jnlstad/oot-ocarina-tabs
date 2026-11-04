@@ -1,54 +1,54 @@
-// Top-down drawing of a 12-hole alto C ocarina. Filled = covered, outline = open.
-// The two thumb holes (back of the ocarina) are drawn in the strip underneath.
+// 12-hole alto C ocarina tab diagram, drawn in the style of STL Ocarina's charts:
+// the body slants up to the right, the mouthpiece points down, and the two thumb
+// holes (back of the ocarina) sit outside the outline next to the mouthpiece.
+// Filled = covered, outline = open.
 
-const FRONT_HOLES = [
-  { id: 'L1', x: 24, y: 27, r: 6.2 },
-  { id: 'L2', x: 36, y: 20, r: 6.2 },
-  { id: 'L3', x: 49, y: 17.5, r: 6 },
-  { id: 'L4', x: 47, y: 34.5, r: 4 },
-  { id: 'R1', x: 65, y: 17.5, r: 6.4 },
-  { id: 'R2', x: 78, y: 19, r: 6.2 },
-  { id: 'R3', x: 90, y: 23.5, r: 5.8 },
-  { id: 'R4', x: 98, y: 35.5, r: 4.2 },
-  { id: 'S1', x: 79, y: 39, r: 2.8 },
-  { id: 'S2', x: 87, y: 43, r: 2.8 },
+const BIG = 20
+const SMALL = 12
+
+const HOLES = [
+  // Left hand: diagonal from the lower-left end up toward the middle
+  { id: 'L1', x: 82, y: 330, r: BIG },
+  { id: 'L2', x: 130, y: 308, r: BIG },
+  { id: 'L3', x: 165, y: 270, r: BIG },
+  { id: 'L4', x: 190, y: 226, r: BIG },
+  { id: 'S1', x: 160, y: 348, r: SMALL },
+  // Right hand: cluster toward the tip
+  { id: 'R1', x: 268, y: 298, r: BIG },
+  { id: 'R2', x: 290, y: 245, r: BIG },
+  { id: 'R3', x: 330, y: 208, r: BIG },
+  { id: 'R4', x: 372, y: 178, r: BIG },
+  { id: 'S2', x: 256, y: 210, r: SMALL },
+  // Thumbs (back)
+  { id: 'LT', x: 166, y: 432, r: BIG },
+  { id: 'RT', x: 320, y: 382, r: BIG },
 ]
 
-const THUMB_HOLES = [
-  { id: 'LT', x: 44, y: 80, r: 6 },
-  { id: 'RT', x: 76, y: 80, r: 6 },
-]
-
-const BODY =
-  'M14 34 C10 18 30 8 58 9.5 C87 11 112 18 112 32 C112 46 90 54 60 54 C36 54 18 48 14 34 Z'
-const MOUTHPIECE = 'M19 39 L6 53 Q2.5 58.5 8 60.5 L12.5 61.5 Q16.5 62.5 19.5 58.5 L31 46 Z'
-
-function Hole({ hole, covered }) {
-  return (
-    <circle
-      className={covered ? 'hole hole--covered' : 'hole'}
-      cx={hole.x}
-      cy={hole.y}
-      r={hole.r}
-    />
-  )
-}
+const BODY = [
+  'M440 96',
+  'C456 92 466 108 455 130', // rounded tip
+  'C405 215 335 290 300 360', // right edge
+  'C286 392 290 450 260 463', // down into the mouthpiece
+  'C242 471 228 462 224 444',
+  'C216 410 204 394 160 392', // back up to the underside
+  'L62 383',
+  'C22 380 8 346 30 314', // round left end
+  'C84 236 250 158 420 100', // top edge back to the tip
+  'C428 97 434 96 440 96 Z',
+].join(' ')
 
 export default function OcarinaDiagram({ covered, label }) {
-  const isCovered = (id) => covered.includes(id)
   return (
-    <svg className="ocarina" viewBox="0 0 120 92" role="img" aria-label={label}>
-      <g transform="rotate(-8 60 34)">
-        <path className="ocarina__body" d={MOUTHPIECE} />
-        <path className="ocarina__body" d={BODY} />
-        <rect className="ocarina__window" x="18" y="38.5" width="6" height="3.4" rx="1" transform="rotate(-42 21 40.2)" />
-        {FRONT_HOLES.map((h) => (
-          <Hole key={h.id} hole={h} covered={isCovered(h.id)} />
-        ))}
-      </g>
-      <rect className="ocarina__back" x="30" y="71" width="60" height="18" rx="9" />
-      {THUMB_HOLES.map((h) => (
-        <Hole key={h.id} hole={h} covered={isCovered(h.id)} />
+    <svg className="ocarina" viewBox="0 84 480 392" role="img" aria-label={label}>
+      <path className="ocarina__body" d={BODY} />
+      {HOLES.map((h) => (
+        <circle
+          key={h.id}
+          className={covered.includes(h.id) ? 'hole hole--covered' : 'hole'}
+          cx={h.x}
+          cy={h.y}
+          r={h.r}
+        />
       ))}
     </svg>
   )
